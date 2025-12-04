@@ -1,6 +1,6 @@
 # 🎫 Event Ticketing System (Midnight Edition)
 
-> A high-end, real-time event management dashboard featuring a glassmorphism UI, secure cloud synchronization, and intelligent QR entry validation.
+> A high-end, real-time event management dashboard featuring a glassmorphism UI, secure cloud synchronization and intelligent QR entry validation.
 
 ## Table of Contents
 1. [📖 Overview](#-overview)
