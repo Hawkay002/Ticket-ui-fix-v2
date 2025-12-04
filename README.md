@@ -30,9 +30,12 @@ Why this stands out:
 Prerequisites
  * A Google/Firebase Account.
  * A GitHub Account (for hosting).
-   * Step 1: Clone the Repository
-git clone [https://github.com/Hawkay002/Ticket-backend.git](https://github.com/Hawkay002/Ticket-backend.git)
-     * cd Ticket-backend
+   
+ * Step 1: Clone the Repository
+```
+git clone https://github.com/Hawkay002/Ticket-backend.git
+cd Ticket-backend
+```
    * Step 2: Firebase Configuration
  * Go to Firebase Console.
  * Create a project and register a Web App (</>).
@@ -40,15 +43,16 @@ git clone [https://github.com/Hawkay002/Ticket-backend.git](https://github.com/H
  * Auth: Enable Email/Password authentication.
  * Users: Manually add your admin email/password in the Firebase Console (Users tab).
    * Note: The app code has public registration disabled for security.
-   * Step 3: Link the Code
+* Step 3: Link the Code
 Open index.html and find the configuration section. Replace it with your keys:
+```js
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
   // ... other keys
 };
-
+```
    * Step 4: Add Custom Sounds (Optional)
 To enable premium audio feedback, add these two files to your root folder (next to index.html):
  * success.mp3 – Plays on valid entry.
