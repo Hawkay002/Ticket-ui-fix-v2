@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Ticketing System</title>
+    <title>Event Ticketing System - Admin Only</title>
     
     <!-- Premium Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --bg-deep: #050505;
             --bg-surface: #0f0f0f;
-            --bg-card: rgba(20, 20, 20, 0.6);
+            --bg-card: rgba(20, 20, 20, 0.6); 
             --border-subtle: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
             --text-muted: #888888;
-            --accent-color: #ffffff; 
+            --accent-color: #ffffff;
             --accent-secondary: #3b82f6;
+            --success-green: #10b981;
             --glass-backdrop: blur(20px);
-            --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -38,9 +42,34 @@
             line-height: 1.6;
             min-height: 100vh;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%), 
-                radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.03), transparent 25%);
+            /* Subtly mix the gradient with the stars */
+            background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%), 
+                              radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.03), transparent 25%);
+        }
+
+        /* --- Starry Night Background Styles --- */
+        #star-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Behind everything */
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 2s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.3; }
         }
 
         button {
@@ -54,7 +83,7 @@
             max-width: 1100px;
             margin: 0 auto;
             padding: 40px 20px;
-            display: none; 
+            display: none;
             animation: fadeIn 0.8s ease-out;
         }
 
@@ -63,41 +92,134 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Loading Screen (New) --- */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-deep);
-            z-index: 5000; /* Highest priority */
+        /* --- Search & Filter Bar Styles --- */
+        .search-filter-container {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-radius: 50%;
-            border-top-color: var(--accent-secondary);
-            animation: spin 1s ease-in-out infinite;
+            gap: 15px;
             margin-bottom: 20px;
+            position: relative;
         }
 
-        .loading-text {
+        .search-box-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: pulse 2s infinite;
+            pointer-events: none;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        .search-input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-secondary);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transition: var(--transition);
+            white-space: nowrap;
+            height: 46px;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: white;
+            color: black;
+        }
+
+        /* Dropdown Menu */
+        .filter-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 10px;
+            min-width: 220px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            z-index: 100;
+            display: none;
+            animation: dropIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .filter-dropdown.show {
+            display: block;
+        }
+
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            padding: 8px 12px 4px;
+            font-weight: 600;
+        }
+
+        .dropdown-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .dropdown-item.selected {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-secondary);
+        }
+
+        .dropdown-item.selected::after {
+            content: '✓';
+            font-weight: bold;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-subtle);
+            margin: 8px 0;
+        }
 
         /* --- Toast Notification System --- */
         #toast-container {
@@ -137,7 +259,7 @@
             font-size: 0.9rem;
             color: #ccc;
         }
-        
+
         .toast-note {
             font-size: 0.75rem;
             color: #666;
@@ -159,6 +281,48 @@
             to { transform: translateX(100%); opacity: 0; }
         }
 
+        /* --- Loading Screen --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-deep);
+            z-index: 5000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-secondary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
         /* --- Login Overlay --- */
         #login-overlay {
             position: fixed;
@@ -167,7 +331,7 @@
             width: 100%;
             height: 100%;
             background: var(--bg-deep);
-            display: none; /* Changed to NONE by default to prevent flash */
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 2000;
@@ -222,6 +386,12 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
         }
 
+        select.premium-input option {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 10px;
+        }
+
         .premium-btn {
             width: 100%;
             padding: 16px;
@@ -238,7 +408,7 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
         }
-        
+
         .premium-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -259,7 +429,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
+
         .user-info-bar {
             display: inline-flex;
             align-items: center;
@@ -271,7 +441,7 @@
             margin-bottom: 30px;
             font-size: 0.9rem;
         }
-        
+
         .logout-btn {
             background: transparent;
             color: var(--text-muted);
@@ -279,13 +449,15 @@
             border-left: 1px solid var(--border-subtle);
             padding-left: 15px;
         }
-        
-        .logout-btn:hover { color: white; }
+
+        .logout-btn:hover {
+            color: white;
+        }
 
         .sync-dot {
             width: 8px;
             height: 8px;
-            background-color: #10b981; 
+            background-color: #10b981;
             border-radius: 50%;
             display: inline-block;
             box-shadow: 0 0 10px #10b981;
@@ -376,7 +548,10 @@
         #ticketTemplate::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; height: 4px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
             background: linear-gradient(90deg, #3b82f6, #fff, #3b82f6);
         }
 
@@ -390,7 +565,7 @@
             text-align: center;
             margin-bottom: 2rem;
         }
-        
+
         .ticket-header h3 {
             font-weight: 700;
             letter-spacing: 3px;
@@ -398,7 +573,7 @@
             margin-bottom: 5px;
             text-transform: uppercase;
         }
-        
+
         .ticket-header p {
             color: var(--text-muted);
             font-size: 0.9rem;
@@ -424,7 +599,7 @@
             display: block;
             margin-bottom: 2px;
         }
-        
+
         .ticket-value {
             font-size: 1.1rem;
             font-weight: 500;
@@ -436,7 +611,7 @@
             padding: 10px;
             border-radius: 10px;
         }
-        
+
         .ticket-footer {
             border-top: 1px dashed #333;
             padding: 15px 30px;
@@ -480,7 +655,7 @@
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-            white-space: nowrap; 
+            white-space: nowrap;
         }
 
         td {
@@ -490,8 +665,10 @@
             vertical-align: middle;
         }
 
-        tr:last-child td { border-bottom: none; }
-        
+        tr:last-child td {
+            border-bottom: none;
+        }
+
         tr:hover td {
             background: rgba(255,255,255,0.02);
         }
@@ -503,13 +680,27 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            white-space: nowrap; 
+            white-space: nowrap;
             display: inline-block;
         }
 
-        .status-coming-soon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-        .status-arrived { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-        .status-absent { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .status-coming-soon {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-arrived {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-absent {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
 
         .action-btn-small {
             padding: 6px 14px;
@@ -520,8 +711,32 @@
             transition: var(--transition);
             white-space: nowrap;
         }
-        
-        .action-btn-small:hover { background: white; color: black; }
+
+        .action-btn-small:hover {
+            background: white;
+            color: black;
+        }
+
+        /* Updated Export Button Style */
+        .export-btn-small {
+            padding: 6px 8px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success-green);
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: var(--transition);
+            white-space: nowrap;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-btn-small:hover {
+            background: var(--success-green);
+            color: black;
+        }
 
         #scanner-container {
             position: relative;
@@ -543,18 +758,23 @@
 
         .scanner-overlay {
             position: absolute;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
-            width: 250px; height: 250px;
+            width: 250px;
+            height: 250px;
             border: 2px solid rgba(255,255,255,0.3);
             border-radius: 20px;
             box-shadow: 0 0 0 4000px rgba(0,0,0,0.8);
         }
-        
+
         .scanner-overlay::after {
             content: '';
             position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
             border-radius: 20px;
             background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.8) 50%, transparent 60%);
             background-size: 200% 200%;
@@ -562,8 +782,89 @@
             z-index: 2;
             opacity: 0.5;
         }
-        
-        @keyframes scanGlow { 0% { background-position: 100% 0; } 100% { background-position: 0 100%; } }
+
+        @keyframes scanGlow {
+            0% { background-position: 100% 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        /* --- NEW Custom Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 4000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: #1a1a1a;
+            border: 1px solid var(--border-subtle);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .modal-box p {
+            color: #aaa;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            flex: 1;
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .modal-btn.secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modal-btn.danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal-btn.danger:hover {
+            background: #dc2626;
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
 
         @media (max-width: 768px) {
             .form-and-ticket { grid-template-columns: 1fr; }
@@ -571,10 +872,13 @@
             .login-box { padding: 2rem; }
             .nav-btn { flex: 1; text-align: center; font-size: 0.9rem; }
             #toast-container { right: 20px; left: 20px; bottom: 20px; }
+            .search-filter-container { flex-direction: column; }
         }
     </style>
 </head>
 <body>
+    <!-- Star Background Container -->
+    <div id="star-container"></div>
 
     <!-- Loading Screen -->
     <div id="loading-screen">
@@ -584,6 +888,18 @@
 
     <!-- Toast Container -->
     <div id="toast-container"></div>
+
+    <!-- Custom Delete Modal -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to permanently remove <span id="delete-count" style="color: white; font-weight: bold;">0</span> entries from the database?</p>
+            <div class="modal-actions">
+                <button id="cancelDelete" class="modal-btn secondary">Cancel</button>
+                <button id="confirmDelete" class="modal-btn danger">Delete</button>
+            </div>
+        </div>
+    </div>
 
     <div id="login-overlay">
         <div class="login-box">
@@ -600,15 +916,16 @@
         <header>
             <h1>Ticketing<span style="font-weight: 600;">System</span>.</h1>
             <div class="user-info-bar">
-                <span class="sync-dot"></span> 
+                <span class="sync-dot"></span>
                 <span id="syncText">Connected as <span id="userEmailDisplay" style="color: white; font-weight: 500;">...</span></span>
                 <button id="logoutBtn" class="logout-btn">Sign Out</button>
             </div>
+
             <nav>
                 <button class="nav-btn active" data-tab="create">Issue Ticket</button>
                 <button class="nav-btn" data-tab="booked">Guest List</button>
                 <button class="nav-btn" data-tab="scanner">Scanner</button>
-                <button class="nav-btn" data-tab="settings">Configuration</button>
+                <button class="nav-btn" data-tab="settings">Config</button>
             </nav>
         </header>
 
@@ -622,9 +939,9 @@
                             <div style="display: flex; gap: 10px;">
                                 <select id="gender" class="premium-input" style="flex: 1;" required>
                                     <option value="" disabled selected>Gender</option>
-                                    <option value="Male" style="color: black;">Male</option>
-                                    <option value="Female" style="color: black;">Female</option>
-                                    <option value="Other" style="color: black;">Other</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
                                 </select>
                                 <input type="number" id="age" class="premium-input" placeholder="Age" style="flex: 1;" required min="1">
                             </div>
@@ -637,7 +954,7 @@
                         <div id="ticketTemplate">
                             <div class="ticket-content-wrapper">
                                 <div class="ticket-header">
-                                    <h3>Entry Pass</h3>
+                                    <h3>VIP Access Pass</h3>
                                     <p id="eventNamePlace">Event Details Loading...</p>
                                 </div>
                                 <div class="ticket-body">
@@ -666,7 +983,7 @@
                             </div>
                         </div>
                         <button id="whatsappBtn" class="premium-btn" style="background: #25D366; color: white; border: none;" disabled>
-                            Save & Share via WhatsApp
+                            Save & Open WhatsApp
                         </button>
                     </div>
                 </div>
@@ -677,13 +994,51 @@
                     <div style="display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center;">
                         <h2 style="border: none; margin: 0;">Guest List</h2>
                         <div class="booked-controls">
-                            <button id="selectBtn" class="action-btn-small">Select</button>
-                            <button id="deleteBtn" class="action-btn-small" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; display: none;">Delete</button>
+                            <!-- Standard Controls Row -->
+                             <button id="selectBtn" class="action-btn-small">Select</button>
+                             <button id="deleteBtn" class="action-btn-small" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; display: none;">Delete</button>
                         </div>
                     </div>
-                    
-                    <div class="select-all-container" style="display: none; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 15px; border-radius: 8px;">
-                        <input type="checkbox" id="selectAllCheckbox"> <label for="selectAllCheckbox" style="margin-left: 10px; font-size: 0.9rem;">Select All Rows</label>
+
+                    <!-- SEARCH & FILTER BAR -->
+                    <div class="search-filter-container">
+                        <div class="search-box-wrapper">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="searchGuestInput" class="search-input" placeholder="Search by name or phone...">
+                        </div>
+                        <div style="position: relative;">
+                            <button id="filterSortBtn" class="filter-btn">
+                                <i class="fa-solid fa-filter"></i> Filter / Sort
+                            </button>
+                            <div id="filterDropdown" class="filter-dropdown">
+                                <div class="dropdown-header">Filter Status</div>
+                                <div class="dropdown-item selected" data-type="filter" data-val="all">All Guests</div>
+                                <div class="dropdown-item" data-type="filter" data-val="arrived">Arrived Only</div>
+                                <div class="dropdown-item" data-type="filter" data-val="coming-soon">Coming Soon</div>
+                                <div class="dropdown-item" data-type="filter" data-val="absent">Absent</div>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-header">Sort Order</div>
+                                <div class="dropdown-item selected" data-type="sort" data-val="newest">Newest First</div>
+                                <div class="dropdown-item" data-type="sort" data-val="oldest">Oldest First</div>
+                                <div class="dropdown-item" data-type="sort" data-val="name-asc">Name (A-Z)</div>
+                                <div class="dropdown-item" data-type="sort" data-val="name-desc">Name (Z-A)</div>
+                                <div class="dropdown-item" data-type="sort" data-val="age-asc">Age (Youngest)</div>
+                                <div class="dropdown-item" data-type="sort" data-val="age-desc">Age (Oldest)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selection Mode Bar (Hidden by Default) -->
+                    <div class="select-all-container" style="display: none; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 15px; border-radius: 8px; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" id="selectAllCheckbox">
+                            <label for="selectAllCheckbox" style="margin-left: 10px; font-size: 0.9rem;">Select All</label>
+                            <span id="selectionCount" style="margin-left: 15px; color: var(--accent-secondary); font-size: 0.9rem;">(0 selected)</span>
+                        </div>
+                        <!-- Export Button inside Selection Bar -->
+                        <button id="exportCsvBtn" class="export-btn-small">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
                     </div>
 
                     <div class="table-container">
@@ -718,19 +1073,23 @@
                     <div id="scanResult" style="margin-top: 20px; padding: 15px; border-radius: 12px; display: none;"></div>
                 </div>
             </div>
-            
+
             <div id="settings" class="tab-content">
                 <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
                     <h2>Configuration</h2>
                     <form id="eventSettingsForm">
                         <label style="display: block; margin-bottom: 5px; color: #888; font-size: 0.85rem; text-transform: uppercase;">Event Name</label>
                         <input type="text" id="eventName" class="premium-input" placeholder="e.g. Summer Gala 2024">
+                        
                         <label style="display: block; margin-bottom: 5px; color: #888; font-size: 0.85rem; text-transform: uppercase;">Location</label>
                         <input type="text" id="eventPlace" class="premium-input" placeholder="e.g. Grand Hall">
+                        
                         <label style="display: block; margin-bottom: 5px; color: #888; font-size: 0.85rem; text-transform: uppercase;">Deadline</label>
                         <input type="datetime-local" id="arrivalDeadline" class="premium-input" style="color-scheme: dark;">
+
                         <button type="submit" class="premium-btn">Save Configuration</button>
                     </form>
+
                     <div class="current-settings" style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px;">
                         <h4 style="margin-bottom: 10px; color: white;">Active Settings</h4>
                         <p style="font-size: 0.9rem; color: #888; margin-bottom: 5px;"><strong>Event:</strong> <span id="currentEventName" style="color: white;">--</span></p>
@@ -756,24 +1115,55 @@
         // FIREBASE CONFIGURATION
         // ==========================================
         const firebaseConfig = {
-          apiKey: "AIzaSyBYzmAZQ8sKHjXgVh_t-vbtYN_gRzBstw8",
-          authDomain: "ticket-backend-5ee83.firebaseapp.com",
-          projectId: "ticket-backend-5ee83",
-          storageBucket: "ticket-backend-5ee83.firebasestorage.app",
-          messagingSenderId: "370130815796",
-          appId: "1:370130815796:web:33df8249fcc68ddc0f7361",
-          measurementId: "G-CED9W20PBK"
+            apiKey: "AIzaSyBYzmAZQ8sKHjXgVh_t-vbtYN_gRzBstw8",
+            authDomain: "ticket-backend-5ee83.firebaseapp.com",
+            projectId: "ticket-backend-5ee83",
+            storageBucket: "ticket-backend-5ee83.firebasestorage.app",
+            messagingSenderId: "370130815796",
+            appId: "1:370130815796:web:33df8249fcc68ddc0f7361",
+            measurementId: "G-CED9W20PBK"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const APP_COLLECTION_ROOT = 'ticket_events_data'; 
 
+        const APP_COLLECTION_ROOT = 'ticket_events_data';
+        
         let currentUser = null;
         let ticketsUnsubscribe = null;
         let settingsUnsubscribe = null;
         let autoCheckInterval = null;
+
+        // --- BACKGROUND STARS LOGIC ---
+        function createStars() {
+            const container = document.getElementById('star-container');
+            const numberOfStars = 100;
+            
+            for (let i = 0; i < numberOfStars; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Random size, position, and animation duration for each star
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                
+                // Random twinkle speed
+                star.style.animationDuration = `${Math.random() * 2 + 1}s`;
+                
+                container.appendChild(star);
+            }
+        }
+        createStars(); // Initialize stars immediately
+
+        // --- SEARCH & FILTER STATE ---
+        let searchTerm = '';
+        let currentFilter = 'all';
+        let currentSort = 'newest';
+        let currentFilteredTickets = []; // Used for export
 
         // --- TOAST NOTIFICATIONS ---
         function showToast(title, msg) {
@@ -787,11 +1177,10 @@
             `;
             container.appendChild(toast);
             
-            // Auto remove
             setTimeout(() => {
                 toast.classList.add('hiding');
                 setTimeout(() => toast.remove(), 400);
-            }, 5000); // Show for 5 seconds
+            }, 5000);
         }
 
         // --- DOM ELEMENTS ---
@@ -805,26 +1194,115 @@
         const userEmailDisplay = document.getElementById('userEmailDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
 
+        // Modal Elements
+        const confirmModal = document.getElementById('confirm-modal');
+        const deleteCountSpan = document.getElementById('delete-count');
+        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        let pendingDeleteIds = [];
+
+        // Search & Filter DOM
+        const searchInput = document.getElementById('searchGuestInput');
+        const filterSortBtn = document.getElementById('filterSortBtn');
+        const filterDropdown = document.getElementById('filterDropdown');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+        // --- EXPORT FUNCTION ---
+        exportCsvBtn.addEventListener('click', () => {
+            // Check if any rows are selected
+            const selectedIds = [];
+            document.querySelectorAll('.ticket-checkbox:checked').forEach(cb => {
+                selectedIds.push(cb.closest('tr').dataset.id);
+            });
+
+            let listToExport = [];
+
+            if (selectedIds.length > 0) {
+                // Export only selected
+                listToExport = bookedTickets.filter(t => selectedIds.includes(t.id));
+                showToast("Exporting Selection", `${listToExport.length} guests selected.`);
+            } else {
+                // Export all currently visible (filtered)
+                listToExport = currentFilteredTickets;
+                showToast("Exporting List", `Exporting ${listToExport.length} guests from current view.`);
+            }
+
+            if (listToExport.length === 0) {
+                return alert("No data to export.");
+            }
+
+            // CSV Creation
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Headers
+            csvContent += "Guest Name,Age,Gender,Phone,Status,Ticket ID,Entry Time\n";
+
+            listToExport.forEach(row => {
+                const scannedTime = row.scannedAt ? new Date(row.scannedAt).toLocaleTimeString() : "";
+                const cleanName = row.name.replace(/,/g, ""); // Remove commas to prevent CSV breakage
+                const rowStr = `${cleanName},${row.age},${row.gender},${row.phone},${row.status},${row.id},${scannedTime}`;
+                csvContent += rowStr + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `guest_list_${new Date().toLocaleDateString().replace(/\//g,'-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // --- SEARCH & FILTER LISTENERS ---
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase().trim();
+            renderBookedTickets();
+        });
+
+        filterSortBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            filterDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', () => {
+            filterDropdown.classList.remove('show');
+        });
+
+        // Filter Logic
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const type = item.dataset.type;
+                const val = item.dataset.val;
+
+                // Update UI selection
+                document.querySelectorAll(`.dropdown-item[data-type="${type}"]`).forEach(el => el.classList.remove('selected'));
+                item.classList.add('selected');
+
+                if(type === 'filter') currentFilter = val;
+                if(type === 'sort') currentSort = val;
+
+                renderBookedTickets();
+                filterDropdown.classList.remove('show');
+            });
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 userEmailDisplay.textContent = user.email;
-                
                 loadingScreen.style.display = 'none';
                 loginOverlay.style.display = 'none';
                 appContent.style.display = 'block';
-                
                 setupRealtimeListeners(user.uid);
                 
                 if(autoCheckInterval) clearInterval(autoCheckInterval);
-                autoCheckInterval = setInterval(checkAutoAbsent, 60000); 
-                
+                autoCheckInterval = setInterval(checkAutoAbsent, 60000);
             } else {
                 currentUser = null;
                 loadingScreen.style.display = 'none';
                 loginOverlay.style.display = 'flex';
                 appContent.style.display = 'none';
-                
                 if (ticketsUnsubscribe) ticketsUnsubscribe();
                 if (settingsUnsubscribe) settingsUnsubscribe();
                 if (autoCheckInterval) clearInterval(autoCheckInterval);
@@ -834,6 +1312,7 @@
         loginButton.addEventListener('click', async () => {
             const email = emailInput.value;
             const password = passwordInput.value;
+            
             authError.style.display = 'none';
             loginButton.textContent = "Verifying...";
             loginButton.disabled = true;
@@ -853,12 +1332,14 @@
                     showError(error.message);
                 }
             } finally {
-                 loginButton.textContent = "Authenticate";
-                 loginButton.disabled = false;
+                loginButton.textContent = "Authenticate";
+                loginButton.disabled = false;
             }
         });
 
-        logoutBtn.addEventListener('click', () => { signOut(auth); });
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth);
+        });
 
         function showError(msg) {
             authError.textContent = msg;
@@ -872,16 +1353,15 @@
 
         function setupRealtimeListeners(userId) {
             const ticketsRef = collection(db, APP_COLLECTION_ROOT, userId, 'tickets');
-            const q = query(ticketsRef); 
-
+            const q = query(ticketsRef);
+            
             ticketsUnsubscribe = onSnapshot(q, (snapshot) => {
                 bookedTickets = [];
                 snapshot.forEach((doc) => {
                     bookedTickets.push({ id: doc.id, ...doc.data() });
                 });
-                bookedTickets.sort((a, b) => b.createdAt - a.createdAt);
                 renderBookedTickets();
-                checkAutoAbsent(); 
+                checkAutoAbsent();
             });
 
             const settingsRef = doc(db, APP_COLLECTION_ROOT, userId, 'settings', 'config');
@@ -889,15 +1369,14 @@
                 if (docSnap.exists()) {
                     eventSettings = docSnap.data();
                     updateSettingsDisplay();
-                    checkAutoAbsent(); 
+                    checkAutoAbsent();
                 } else {
                     eventSettings = { name: '', place: '', deadline: '' };
                     updateSettingsDisplay();
                 }
             });
         }
-        
-        // --- AUTO ABSENT LOGIC WITH TOAST ---
+
         async function checkAutoAbsent() {
             if (!eventSettings.deadline || !bookedTickets.length || !currentUser) return;
 
@@ -916,8 +1395,8 @@
                 }
                 
                 if (now < deadlineTime && ticket.status === 'absent') {
-                     updates.push(updateDoc(ticketRef, { status: 'coming-soon' }));
-                     revertedCount++;
+                    updates.push(updateDoc(ticketRef, { status: 'coming-soon' }));
+                    revertedCount++;
                 }
             });
 
@@ -934,15 +1413,17 @@
 
         const navButtons = document.querySelectorAll('.nav-btn');
         const tabs = document.querySelectorAll('.tab-content');
-        
+
         navButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const scannerVideo = document.getElementById('scanner-video');
                 if (scannerVideo.srcObject && button.dataset.tab !== 'scanner') {
                     stopScan();
                 }
+
                 navButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
+
                 tabs.forEach(tab => {
                     tab.classList.remove('active');
                     if (tab.id === button.dataset.tab) {
@@ -956,11 +1437,13 @@
         eventSettingsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
+
             const newSettings = {
                 name: document.getElementById('eventName').value,
                 place: document.getElementById('eventPlace').value,
                 deadline: document.getElementById('arrivalDeadline').value
             };
+
             const settingsRef = doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'settings', 'config');
             await setDoc(settingsRef, newSettings, { merge: true });
             alert('Settings Saved!');
@@ -971,10 +1454,8 @@
             document.getElementById('currentEventPlace').textContent = eventSettings.place || 'Not set';
             document.getElementById('currentDeadline').textContent = eventSettings.deadline ? new Date(eventSettings.deadline).toLocaleString() : 'Not set';
             
-            document.getElementById('eventNamePlace').textContent = eventSettings.name && eventSettings.place 
-                ? `${eventSettings.name} | ${eventSettings.place}` 
-                : 'EVENT DETAILS';
-                
+            document.getElementById('eventNamePlace').textContent = eventSettings.name && eventSettings.place ? `${eventSettings.name} | ${eventSettings.place}` : 'EVENT DETAILS';
+            
             document.getElementById('eventName').value = eventSettings.name || '';
             document.getElementById('eventPlace').value = eventSettings.place || '';
             document.getElementById('arrivalDeadline').value = eventSettings.deadline || '';
@@ -991,7 +1472,9 @@
             const phone = document.getElementById('phone').value;
 
             const newTicket = {
-                name, gender, age, 
+                name,
+                gender,
+                age,
                 phone: '+91' + phone,
                 status: 'coming-soon',
                 scanned: false,
@@ -1009,17 +1492,42 @@
         });
 
         const bookedTicketsTable = document.getElementById('bookedTicketsTable');
+
         function renderBookedTickets() {
             bookedTicketsTable.innerHTML = '';
-            if(bookedTickets.length === 0) {
-                bookedTicketsTable.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px; color: #666;">No guests in database.</td></tr>';
+
+            // 1. FILTER
+            let displayTickets = bookedTickets.filter(ticket => {
+                const matchesSearch = ticket.name.toLowerCase().includes(searchTerm) || ticket.phone.includes(searchTerm);
+                if (!matchesSearch) return false;
+
+                if (currentFilter === 'all') return true;
+                return ticket.status === currentFilter;
+            });
+
+            // 2. SORT
+            displayTickets.sort((a, b) => {
+                if (currentSort === 'newest') return b.createdAt - a.createdAt;
+                if (currentSort === 'oldest') return a.createdAt - b.createdAt;
+                if (currentSort === 'name-asc') return a.name.localeCompare(b.name);
+                if (currentSort === 'name-desc') return b.name.localeCompare(a.name);
+                if (currentSort === 'age-asc') return Number(a.age) - Number(b.age);
+                if (currentSort === 'age-desc') return Number(b.age) - Number(a.age);
+                return 0;
+            });
+
+            // Store for export
+            currentFilteredTickets = displayTickets;
+
+            if(displayTickets.length === 0) {
+                bookedTicketsTable.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 30px; color: #666;">No matching guests found.</td></tr>';
                 return;
             }
-            bookedTickets.forEach(ticket => {
+
+            displayTickets.forEach(ticket => {
                 const tr = document.createElement('tr');
                 tr.dataset.id = ticket.id;
                 
-                // Status Logic with Time
                 let statusHtml = `<span class="status-badge status-${ticket.status}">${ticket.status.replace('-', ' ')}</span>`;
                 if(ticket.status === 'arrived' && ticket.scannedAt) {
                     const timeStr = new Date(ticket.scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1037,18 +1545,24 @@
                 `;
                 bookedTicketsTable.appendChild(tr);
             });
-            
+
+            // Re-attach view listeners
             document.querySelectorAll('.view-ticket-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                     const ticket = bookedTickets.find(t => t.id === e.target.dataset.id);
-                     if(ticket) {
-                         document.querySelector('[data-tab="create"]').click();
-                         updateTicketPreview(ticket);
-                     }
+                    const ticket = bookedTickets.find(t => t.id === e.target.dataset.id);
+                    if(ticket) {
+                        document.querySelector('[data-tab="create"]').click();
+                        updateTicketPreview(ticket);
+                    }
                 });
             });
+
+            // Re-attach checkbox listener for count update
+            document.querySelectorAll('.ticket-checkbox').forEach(box => {
+                box.addEventListener('change', updateSelectionCount);
+            });
         }
-        
+
         function updateTicketPreview(ticket) {
             document.getElementById('ticketName').textContent = ticket.name;
             document.getElementById('ticketAgeGender').textContent = `${ticket.age} / ${ticket.gender}`;
@@ -1059,15 +1573,16 @@
             qrcodeContainer.innerHTML = '';
             new QRCode(qrcodeContainer, {
                 text: ticket.id,
-                width: 100, height: 100,
+                width: 100,
+                height: 100,
                 colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel: QRCode.CorrectLevel.H
             });
+
             document.getElementById('whatsappBtn').disabled = false;
         }
 
-        // WhatsApp Share & Download Logic (Auto-Reset)
         document.getElementById('whatsappBtn').addEventListener('click', () => {
             const btn = document.getElementById('whatsappBtn');
             const originalText = btn.textContent;
@@ -1076,51 +1591,42 @@
 
             const ticketTemplate = document.getElementById('ticketTemplate');
             const originalBorder = ticketTemplate.style.border;
-            ticketTemplate.style.border = 'none'; // Clean capture
-            
-            html2canvas(ticketTemplate, { 
+            ticketTemplate.style.border = 'none';
+
+            html2canvas(ticketTemplate, {
                 scale: 3,
                 backgroundColor: "#000000",
-                useCORS: true 
+                useCORS: true
             }).then(canvas => {
-                ticketTemplate.style.border = originalBorder; // Restore style
-                
-                // 1. Trigger Download
+                ticketTemplate.style.border = originalBorder;
+
                 const now = new Date();
                 const pad = (num) => String(num).padStart(2, '0');
                 const timestamp = `${pad(now.getDate())}${pad(now.getMonth() + 1)}${now.getFullYear()}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
                 
                 const link = document.createElement('a');
-                link.download = `ticket-${timestamp}.png`; 
+                link.download = `ticket-${timestamp}.png`;
                 link.href = canvas.toDataURL('image/png');
-                document.body.appendChild(link); // Required for some browsers
+                document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
-                // 2. Open WhatsApp & Reset (Delayed to allow download to start)
+
                 setTimeout(() => {
                     const phone = document.getElementById('ticketPhone').textContent.replace(/\D/g,'');
                     const name = document.getElementById('ticketName').textContent;
-                    const message = encodeURIComponent(`Hello ${name}, here is your Entry Pass 🎫.\n*Keep this QR code ready at the entrance.*`);
-                    
-                    // Use location.href to bypass pop-up blockers on mobile
+                    const message = encodeURIComponent(`Hello ${name}, here is your VIP Entry Pass.\n(Please attach the downloaded ticket image here)\n*Keep this QR code ready at the entrance.*`);
                     window.location.href = `https://wa.me/${phone}?text=${message}`;
                     
-                    // --- RESET LOGIC ---
                     btn.textContent = originalText;
-                    btn.disabled = true; // Disable until new ticket generated
-                    
-                    // 1. Clear Ticket Preview Data
+                    btn.disabled = true;
                     document.getElementById('ticketName').textContent = '--';
                     document.getElementById('ticketAgeGender').textContent = '-- / --';
                     document.getElementById('ticketPhone').textContent = '--';
                     document.getElementById('ticketSerial').textContent = 'ID: --';
                     document.getElementById('qrcode').innerHTML = '';
-                    
-                    // 2. Clear Input Form
                     document.getElementById('ticketForm').reset();
-                    
-                }, 1500); 
+                }, 1500);
+
             }).catch(err => {
                 console.error(err);
                 alert("Error generating ticket image");
@@ -1129,40 +1635,74 @@
             });
         });
 
-        // Bulk Delete
+        // Bulk Delete & Selection Logic
         const selectBtn = document.getElementById('selectBtn');
         const deleteBtn = document.getElementById('deleteBtn');
         const selectAllCheckbox = document.getElementById('selectAllCheckbox');
         const selectAllContainer = document.querySelector('.select-all-container');
+        const selectionCountSpan = document.getElementById('selectionCount');
         let isSelectionMode = false;
+
+        function updateSelectionCount() {
+            const count = document.querySelectorAll('.ticket-checkbox:checked').length;
+            selectionCountSpan.textContent = `(${count} selected)`;
+        }
 
         selectBtn.addEventListener('click', () => {
             isSelectionMode = !isSelectionMode;
             deleteBtn.style.display = isSelectionMode ? 'inline-block' : 'none';
-            selectAllContainer.style.display = isSelectionMode ? 'block' : 'none';
+            selectAllContainer.style.display = isSelectionMode ? 'flex' : 'none'; // Changed to flex for alignment
             selectBtn.textContent = isSelectionMode ? 'Cancel' : 'Select';
+            
+            // Reset selection when toggling off
             if(!isSelectionMode) {
-                 document.querySelectorAll('.ticket-checkbox').forEach(cb => cb.checked = false);
-                 selectAllCheckbox.checked = false;
+                document.querySelectorAll('.ticket-checkbox').forEach(cb => cb.checked = false);
+                selectAllCheckbox.checked = false;
+                updateSelectionCount();
             }
         });
 
         selectAllCheckbox.addEventListener('change', (e) => {
             document.querySelectorAll('.ticket-checkbox').forEach(cb => cb.checked = e.target.checked);
+            updateSelectionCount();
         });
 
-        deleteBtn.addEventListener('click', async () => {
-             const selectedIds = [];
-             document.querySelectorAll('.ticket-checkbox:checked').forEach(cb => {
-                 selectedIds.push(cb.closest('tr').dataset.id);
-             });
-             if(selectedIds.length === 0) return alert('Select tickets to delete');
-             if(confirm(`Permanently delete ${selectedIds.length} entries?`)) {
-                 for(const id of selectedIds) {
-                     await deleteDoc(doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'tickets', id));
-                 }
-                 selectBtn.click();
-             }
+        // MODAL TRIGGER Logic
+        deleteBtn.addEventListener('click', () => {
+            const selectedIds = [];
+            document.querySelectorAll('.ticket-checkbox:checked').forEach(cb => {
+                selectedIds.push(cb.closest('tr').dataset.id);
+            });
+
+            if(selectedIds.length === 0) return alert('Select tickets to delete');
+
+            // Update modal content and show
+            pendingDeleteIds = selectedIds;
+            deleteCountSpan.textContent = selectedIds.length;
+            confirmModal.style.display = 'flex';
+        });
+
+        // MODAL ACTIONS
+        cancelDeleteBtn.addEventListener('click', () => {
+            confirmModal.style.display = 'none';
+            pendingDeleteIds = [];
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if(pendingDeleteIds.length > 0) {
+                // Change button state
+                confirmDeleteBtn.textContent = "Deleting...";
+                
+                for(const id of pendingDeleteIds) {
+                    await deleteDoc(doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'tickets', id));
+                }
+
+                // Cleanup
+                confirmModal.style.display = 'none';
+                confirmDeleteBtn.textContent = "Delete";
+                pendingDeleteIds = [];
+                selectBtn.click(); // Exit selection mode
+            }
         });
 
         // Scanner
@@ -1171,14 +1711,15 @@
         const scanResult = document.getElementById('scanResult');
 
         startScanBtn.addEventListener('click', () => {
-            if (scannerVideo.srcObject) stopScan(); else startScan();
+            if (scannerVideo.srcObject) stopScan();
+            else startScan();
         });
 
         function startScan() {
-             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(stream => {
                     scannerVideo.srcObject = stream;
-                    scannerVideo.setAttribute("playsinline", true);
+                    scannerVideo.setAttribute("playsinline", true); 
                     scannerVideo.play();
                     startScanBtn.textContent = 'Deactivate Camera';
                     scanResult.style.display = 'block';
@@ -1190,7 +1731,7 @@
                     alert("Camera error: " + err);
                 });
         }
-        
+
         function stopScan() {
             if (scannerVideo.srcObject) scannerVideo.srcObject.getTracks().forEach(t => t.stop());
             scannerVideo.srcObject = null;
@@ -1198,79 +1739,82 @@
         }
 
         function tick() {
-             if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
-                  const canvas = document.createElement('canvas');
-                  const ctx = canvas.getContext('2d');
-                  canvas.width = scannerVideo.videoWidth;
-                  canvas.height = scannerVideo.videoHeight;
-                  ctx.drawImage(scannerVideo, 0, 0, canvas.width, canvas.height);
-                  const imageData = ctx.getImageData(0,0, canvas.width, canvas.height);
-                  const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
-                  if(code) {
-                       validateTicket(code.data);
-                       stopScan();
-                  } else {
-                       if(scannerVideo.srcObject) requestAnimationFrame(tick);
-                  }
-             } else {
-                  if(scannerVideo.srcObject) requestAnimationFrame(tick);
-             }
+            if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = scannerVideo.videoWidth;
+                canvas.height = scannerVideo.videoHeight;
+                ctx.drawImage(scannerVideo, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0,0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+
+                if(code) {
+                    validateTicket(code.data);
+                    stopScan();
+                } else {
+                    if(scannerVideo.srcObject) requestAnimationFrame(tick);
+                }
+            } else {
+                if(scannerVideo.srcObject) requestAnimationFrame(tick);
+            }
         }
 
         async function validateTicket(ticketId) {
-             const ticket = bookedTickets.find(t => t.id === ticketId);
-             scanResult.style.display = 'block';
-             
-             if(ticket) {
-                 if(ticket.status === 'coming-soon' && !ticket.scanned) {
-                      await updateDoc(doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'tickets', ticketId), {
-                          status: 'arrived', scanned: true, scannedAt: Date.now()
-                      });
-                      scanResult.style.background = 'rgba(16, 185, 129, 0.2)';
-                      scanResult.style.color = '#10b981';
-                      scanResult.style.border = '1px solid #10b981';
-                      scanResult.textContent = `✅ ACCESS GRANTED: ${ticket.name}`;
-                      playBeep();
-                 } else {
-                      scanResult.style.background = 'rgba(239, 68, 68, 0.2)';
-                      scanResult.style.color = '#ef4444';
-                      scanResult.style.border = '1px solid #ef4444';
-                      scanResult.textContent = `❌ DENIED: Already Scanned or Invalid Status`;
-                      playError();
-                 }
-             } else {
-                 scanResult.style.background = 'rgba(239, 68, 68, 0.2)';
-                 scanResult.style.color = '#ef4444';
-                 scanResult.textContent = `❌ DENIED: Invalid Ticket ID`;
-                 playError();
-             }
+            const ticket = bookedTickets.find(t => t.id === ticketId);
+            scanResult.style.display = 'block';
+
+            if(ticket) {
+                if(ticket.status === 'coming-soon' && !ticket.scanned) {
+                    await updateDoc(doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'tickets', ticketId), {
+                        status: 'arrived',
+                        scanned: true,
+                        scannedAt: Date.now()
+                    });
+                    scanResult.style.background = 'rgba(16, 185, 129, 0.2)';
+                    scanResult.style.color = '#10b981';
+                    scanResult.style.border = '1px solid #10b981';
+                    scanResult.textContent = `✅ ACCESS GRANTED: ${ticket.name}`;
+                    playBeep();
+                } else {
+                    scanResult.style.background = 'rgba(239, 68, 68, 0.2)';
+                    scanResult.style.color = '#ef4444';
+                    scanResult.style.border = '1px solid #ef4444';
+                    scanResult.textContent = `❌ DENIED: Already Scanned or Invalid Status`;
+                    playError();
+                }
+            } else {
+                scanResult.style.background = 'rgba(239, 68, 68, 0.2)';
+                scanResult.style.color = '#ef4444';
+                scanResult.textContent = `❌ DENIED: Invalid Ticket ID`;
+                playError();
+            }
         }
-        
-        function playBeep() { 
-             const audio = new Audio('success.mp3');
-             audio.play().catch(e => {
-                 console.log("Custom sound not found, using fallback beep.");
-                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                 const osc = ctx.createOscillator();
-                 osc.connect(ctx.destination);
-                 osc.frequency.value = 800;
-                 osc.start();
-                 setTimeout(() => osc.stop(), 100);
-             });
+
+        function playBeep() {
+            const audio = new Audio('success.mp3');
+            audio.play().catch(e => {
+                console.log("Custom sound not found, using fallback beep.");
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.connect(ctx.destination);
+                osc.frequency.value = 800;
+                osc.start();
+                setTimeout(() => osc.stop(), 100);
+            });
         }
-        
+
         function playError() {
-             const audio = new Audio('error.mp3');
-             audio.play().catch(e => {
-                 console.log("Custom sound not found, using fallback error.");
-                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                 const osc = ctx.createOscillator();
-                 osc.type = 'sawtooth';
-                 osc.connect(ctx.destination);
-                 osc.frequency.value = 150;
-                 osc.start();
-                 setTimeout(() => osc.stop(), 300);
-             });
+            const audio = new Audio('error.mp3');
+            audio.play().catch(e => {
+                console.log("Custom sound not found, using fallback error.");
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'sawtooth';
+                osc.connect(ctx.destination);
+                osc.frequency.value = 150;
+                osc.start();
+                setTimeout(() => osc.stop(), 300);
+            });
         }
     </script>
 </body>
