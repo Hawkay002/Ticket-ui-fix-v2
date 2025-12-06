@@ -854,7 +854,12 @@ function stopScan() {
     startScanBtn.textContent = 'Activate Camera';
 }
 
+let isCooldown = false; // Prevents rapid rescanning
+
 function tick() {
+    // Only continue if the camera is still running
+    if (!scannerVideo.srcObject) return;
+
     if (scannerVideo.readyState === scannerVideo.HAVE_ENOUGH_DATA) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -864,14 +869,21 @@ function tick() {
         const imageData = ctx.getImageData(0,0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
 
-        if(code) {
+        if(code && !isCooldown) {
+            // Activate cooldown to prevent double scans
+            isCooldown = true;
             validateTicket(code.data);
-            stopScan();
-        } else {
-            if(scannerVideo.srcObject) requestAnimationFrame(tick);
+            
+            // Set 1.5 second buffer
+            setTimeout(() => {
+                isCooldown = false;
+            }, 1500);
         }
-    } else {
-        if(scannerVideo.srcObject) requestAnimationFrame(tick);
+    }
+    
+    // Always keep the loop running while the camera is active
+    if (scannerVideo.srcObject) {
+        requestAnimationFrame(tick);
     }
 }
 
