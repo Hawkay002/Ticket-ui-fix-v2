@@ -534,7 +534,7 @@ function applySecurityLocks() {
         });
         lockPasswordInput.disabled = false;
         lockSystemBtn.disabled = false;
-        lockSystemBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Lock System';
+        lockSystemBtn.innerHTML = '<i class="fa-solid fa-lock"></i> Lock This Device';
     }
 }
 
@@ -542,8 +542,8 @@ function applySecurityLocks() {
 lockSystemBtn.addEventListener('click', async () => {
     if(!currentUser) return;
     
-    const password = lockPasswordInput.value;
-    if(!password) {
+    const inputPassword = lockPasswordInput.value;
+    if(!inputPassword) {
         alert("Please set a password to lock the system.");
         return;
     }
@@ -553,21 +553,35 @@ lockSystemBtn.addEventListener('click', async () => {
         if(cb.checked) selectedTabs.push(cb.value);
     });
 
+    // 1. Check against Global Password (Prevent Overwrite)
+    if (globalPassword && globalPassword !== inputPassword) {
+        showToast("Access Denied", "Incorrect Master Password. You cannot overwrite the existing global password.");
+        playError();
+        lockPasswordInput.classList.add('shake');
+        setTimeout(() => lockPasswordInput.classList.remove('shake'), 500);
+        return;
+    }
+
     try {
-        // 1. Save Password Globally (To DB)
-        // This ensures every device has the same key, even if locking is manual
-        await setDoc(doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'settings', 'security'), {
-            password: password
-        }, { merge: true });
+        // 2. Only Save to DB if NO global password exists (First time setup)
+        if (!globalPassword) {
+            await setDoc(doc(db, APP_COLLECTION_ROOT, currentUser.uid, 'settings', 'security'), {
+                password: inputPassword
+            }, { merge: true });
+            
+            // Immediately update local reference to avoid race condition in same session
+            globalPassword = inputPassword;
+            showToast("Setup Complete", "Global Master Password set.");
+        }
         
-        // 2. Save Lock State Locally (To LocalStorage)
+        // 3. Save Lock State Locally (To LocalStorage)
         localLockState = {
             isLocked: true,
             lockedTabs: selectedTabs
         };
         saveLocalSecurityState();
 
-        // 3. Apply UI changes immediately
+        // 4. Apply UI changes immediately
         applySecurityLocks();
         
         // Force navigate away from settings to a safe tab
@@ -586,7 +600,7 @@ lockSystemBtn.addEventListener('click', async () => {
 
     } catch (err) {
         console.error("Lock error:", err);
-        alert("Failed to save password to database.");
+        alert("Failed to process lock request.");
     }
 });
 
