@@ -56,6 +56,20 @@
         </div>
     </div>
 
+    <!-- Unlock Modal (New) -->
+    <div id="unlock-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Device Locked</h3>
+            <p>Enter the master password to unlock this device.</p>
+            <input type="password" id="unlockPasswordInput" class="premium-input" placeholder="Enter Password" style="text-align: center; letter-spacing: 2px;">
+            <div id="unlock-error" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 15px; display: none;">Incorrect Password</div>
+            <div class="modal-actions">
+                <button id="cancelUnlock" class="modal-btn secondary">Cancel</button>
+                <button id="confirmUnlock" class="modal-btn success">Unlock</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Export Modal -->
     <div id="export-modal" class="modal-overlay">
         <div class="modal-box" style="max-width: 450px;">
@@ -112,10 +126,10 @@
             </div>
 
             <nav>
-                <button class="nav-btn active" data-tab="create">Issue Ticket</button>
-                <button class="nav-btn" data-tab="booked">Guest List</button>
-                <button class="nav-btn" data-tab="scanner">Scanner</button>
-                <button class="nav-btn" data-tab="settings">Configuration</button>
+                <button class="nav-btn active" data-tab="create" id="nav-create">Issue Ticket</button>
+                <button class="nav-btn" data-tab="booked" id="nav-booked">Guest List</button>
+                <button class="nav-btn" data-tab="scanner" id="nav-scanner">Scanner</button>
+                <button class="nav-btn" data-tab="settings" id="nav-settings">Configuration</button>
             </nav>
         </header>
 
@@ -277,7 +291,8 @@
                         <video id="scanner-video" playsinline></video>
                         <div class="scanner-overlay"></div>
                     </div>
-                    <button id="startScanBtn" class="premium-btn" style="width: auto; padding: 12px 30px;">Activate Camera</button>
+                    <!-- CHANGED: Added margin: 10px auto to center the flex button -->
+                    <button id="startScanBtn" class="premium-btn" style="width: auto; padding: 12px 30px; margin: 10px auto;">Activate Camera</button>
                     <div id="scanResult" style="margin-top: 20px; padding: 15px; border-radius: 12px; display: none;"></div>
                 </div>
             </div>
@@ -297,6 +312,36 @@
 
                         <button type="submit" class="premium-btn">Save Configuration</button>
                     </form>
+
+                    <!-- NEW SECURITY SECTION -->
+                    <div class="lock-section" style="margin-top: 40px; border-top: 1px solid var(--border-subtle); padding-top: 30px;">
+                        <h3 style="font-size: 1.2rem; margin-bottom: 15px; color: white;">Lock Tabs (This Device)</h3>
+                        <p style="color: #888; font-size: 0.9rem; margin-bottom: 20px;">
+                            Secure this device. The password is global for all devices.
+                        </p>
+                        
+                        <!-- CHANGED: Moved margin to wrapper, removed from input to fix eye alignment -->
+                        <div class="password-wrapper" style="margin-bottom: 20px;">
+                             <input type="password" id="lockSettingPassword" class="premium-input" placeholder="Set/Confirm Global Password">
+                             <i class="fa-regular fa-eye password-toggle-icon" id="toggleLockPassword"></i>
+                        </div>
+
+                        <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="lock-checkbox" value="create"> Issue Ticket Tab
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="lock-checkbox" value="booked"> Guest List Tab
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="lock-checkbox" value="scanner"> Scanner Tab
+                            </label>
+                        </div>
+
+                        <button id="lockSystemBtn" class="premium-btn" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);">
+                            <i class="fa-solid fa-lock"></i> Lock This Device
+                        </button>
+                    </div>
 
                     <div class="current-settings" style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px;">
                         <h4 style="margin-bottom: 10px; color: white;">Active Settings</h4>
