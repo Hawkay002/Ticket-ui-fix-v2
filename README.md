@@ -122,8 +122,10 @@ Ticket-backend \`\`\`
 
 Replace the Firebase config in `script.js` or inside `index.html`:
 
-\`\`\`js const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain:
-"YOUR_PROJECT.firebaseapp.com", projectId: "YOUR_PROJECT_ID", }; \`\`\`
+```js
+const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain:
+"YOUR_PROJECT.firebaseapp.com", projectId: "YOUR_PROJECT_ID", };
+```
 
 ### Step 4: Add Custom Sounds Optional
 
@@ -153,9 +155,17 @@ Place these audio files in the project root: - `success.mp3` -
 
 ## 📂 Project Structure
 
-\`\`\` Ticket-backend/ ├── index.html ├── style.css ├── script.js ├──
-success.mp3 ├── error.mp3 ├── manifest.json ├── service-worker.js └──
-README.md \`\`\`
+```
+Ticket-backend/
+├── index.html
+├── style.css
+├── script.js
+├── success.mp3
+├── error.mp3
+├── manifest.json
+├── service-worker.js
+└── README.md
+```
 
 ## 🛡️ Security Architecture
 
@@ -165,4 +175,4 @@ README.md \`\`\`
 
 ## 📄 License
 
-Distributed under the **Apache License 2.0**.
+Distributed under the [**Apache License 2.0**](/LICENSE).
