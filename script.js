@@ -40,6 +40,7 @@ let currentDeviceId = null;
 let ticketsUnsubscribe = null;
 let settingsUnsubscribe = null;
 let adminPresenceUnsubscribes = []; 
+let lockUnsubscribe = null;
 
 // Intervals
 let autoCheckInterval = null;
@@ -213,7 +214,7 @@ onAuthStateChanged(auth, async (user) => {
         loginOverlay.style.display = 'none';
         appContent.style.display = 'block';
         
-        // 1. Setup Shared Data Listeners
+        // 1. Setup Shared Data Listeners (PRIORITY)
         setupRealtimeListeners();
         
         // 2. Start Presence Heartbeat
@@ -225,6 +226,7 @@ onAuthStateChanged(auth, async (user) => {
             initGlobalSecurity(); // Initialize both Factory and Lock passwords
             remoteLockedTabs = []; 
         } else {
+            // Updated to handle errors
             listenForRemoteLocks(user.email);
             adminLockPanel.style.display = 'none';
             userLockStatus.style.display = 'block';
@@ -248,8 +250,10 @@ onAuthStateChanged(auth, async (user) => {
         
         if (heartbeatInterval) clearInterval(heartbeatInterval);
         if (adminUiRefreshInterval) clearInterval(adminUiRefreshInterval);
+        
         if (ticketsUnsubscribe) ticketsUnsubscribe();
         if (settingsUnsubscribe) settingsUnsubscribe();
+        if (lockUnsubscribe) lockUnsubscribe();
         
         adminPresenceUnsubscribes.forEach(unsub => unsub());
         adminPresenceUnsubscribes = [];
@@ -642,13 +646,21 @@ if (confirmFactoryReset) {
 
 function listenForRemoteLocks(userEmail) {
     const lockRef = doc(db, 'global_locks', userEmail);
-    onSnapshot(lockRef, (doc) => {
+    
+    // UPDATED: Added Error Handling for Non-Admin Listener
+    if (lockUnsubscribe) lockUnsubscribe();
+    
+    lockUnsubscribe = onSnapshot(lockRef, (doc) => {
         if (doc.exists()) {
             const data = doc.data();
             applyRemoteLocks(data.lockedTabs || []);
         } else {
             applyRemoteLocks([]); 
         }
+    }, (error) => {
+        console.warn("Lock listener failed (Non-critical):", error);
+        // We don't block the UI here, just log it.
+        // If this fails, user defaults to NO locks, which is safe for usability.
     });
 }
 
