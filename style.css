@@ -1035,7 +1035,8 @@ tr:hover td {
 /* RED/DANGER ACTIONS */
 .log-action-TICKET_DELETE,
 .log-action-FACTORY_RESET,
-.log-action-LOCK_ACTION {
+.log-action-LOCK_ACTION,
+.log-action-LOG_DELETE { /* Added this for Log Deletion events */
     background: rgba(239, 68, 68, 0.1);
     color: #ef4444;
     border-color: rgba(239, 68, 68, 0.2);
