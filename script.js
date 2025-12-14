@@ -34,8 +34,15 @@ const MANAGED_USERS = [
 
 // User & Auth State
 let currentUser = null;
-let currentUsername = null; // New global for Step 2 Verification
+let currentUsername = null; 
 let currentDeviceId = null;
+
+// ======================================================
+// EASTER EGG AUDIO SETUP
+// TODO: Replace 'path_to_your_music.mp3' with your actual file!
+// ======================================================
+const easterEggAudio = new Audio('/reelaudio-54143_eTFyu9mL.mp3'); 
+easterEggAudio.loop = true;
 
 // Firestore Unsubscribers
 let ticketsUnsubscribe = null;
@@ -57,16 +64,16 @@ let eventSettings = { name: '', place: '', deadline: '' };
 // Admin/Security State
 let remoteLockedTabs = []; 
 let selectedUserForConfig = null; 
-let selectedUsernamesForLock = new Set(); // Stores usernames selected in Admin UI
+let selectedUsernamesForLock = new Set(); 
 let managedUsersDeviceCache = {}; 
-let currentLockData = null; // NEW: Store fetched lock data for selected user
+let currentLockData = null; 
 
 // Logs State
 let allActivityLogs = [];
-let currentFilteredLogs = []; // NEW: For Select All logic
+let currentFilteredLogs = []; 
 let currentLogFilter = 'all';
-let isLogSelectionMode = false; // NEW: Track log selection mode
-let selectedLogIds = new Set(); // NEW: Store selected log IDs
+let isLogSelectionMode = false; 
+let selectedLogIds = new Set(); 
 
 // UI State
 let searchTerm = '';
@@ -102,7 +109,7 @@ const gatekeeperLogoutBtn = document.getElementById('gatekeeperLogoutBtn');
 // Navigation
 const navButtons = document.querySelectorAll('.nav-btn');
 const tabs = document.querySelectorAll('.tab-content');
-const navLogsBtn = document.getElementById('nav-logs'); // NEW: Logs button
+const navLogsBtn = document.getElementById('nav-logs');
 
 // Admin Panel
 const adminLockPanel = document.getElementById('admin-lock-panel');
@@ -151,6 +158,7 @@ const searchLogsInput = document.getElementById('searchLogsInput');
 const filterLogsTypeBtn = document.getElementById('filterLogsTypeBtn');
 const filterLogsDropdown = document.getElementById('filterLogsDropdown');
 const activityLogsTable = document.getElementById('activityLogsTable');
+
 // NEW LOGS CONTROLS
 const selectLogsBtn = document.getElementById('selectLogsBtn');
 const deleteLogsBtn = document.getElementById('deleteLogsBtn');
@@ -1041,6 +1049,23 @@ function playError() {
         osc.start();
         setTimeout(() => osc.stop(), 300);
     });
+}
+
+// -------------------------------------------------------------
+// EASTER EGG TOGGLE FUNCTION
+// -------------------------------------------------------------
+function toggleEasterEggMusic(element) {
+    if (easterEggAudio.paused) {
+        // Play
+        easterEggAudio.play().catch(e => console.warn("Music file not found or interaction required."));
+        element.classList.add('playing');
+        showToast("Easter Egg Found! 🎵", "Playing music...");
+    } else {
+        // Stop
+        easterEggAudio.pause();
+        easterEggAudio.currentTime = 0;
+        document.querySelectorAll('.easter-egg-trigger').forEach(el => el.classList.remove('playing'));
+    }
 }
 
 
@@ -2070,6 +2095,9 @@ function renderLogsTable() {
         // Action Badge Class
         const badgeClass = `log-action-${log.action}` in getClassMap() ? `log-action-${log.action}` : 'log-action-DEFAULT';
         
+        // NEW: Add specific class for the easter egg trigger
+        const easterEggClass = log.action === 'EXPORT_DATA' ? 'easter-egg-trigger' : '';
+        
         const isChecked = selectedLogIds.has(log.id) ? 'checked' : '';
 
         tr.innerHTML = `
@@ -2078,7 +2106,7 @@ function renderLogsTable() {
             </td>
             <td style="font-size: 0.8rem; color: #888; white-space: nowrap;">${dateStr}</td>
             <td style="font-weight: 500; color: white;">${log.username}</td>
-            <td><span class="log-action-badge ${badgeClass}">${log.action.replace('_', ' ')}</span></td>
+            <td><span class="log-action-badge ${badgeClass} ${easterEggClass}">${log.action.replace('_', ' ')}</span></td>
             <td style="font-size: 0.85rem; color: #ccc;">${log.details}</td>
         `;
         activityLogsTable.appendChild(tr);
@@ -2091,6 +2119,14 @@ function renderLogsTable() {
             if(e.target.checked) selectedLogIds.add(rowId);
             else selectedLogIds.delete(rowId);
             updateLogSelectionCount();
+        });
+    });
+
+    // Attach Easter Egg Listeners
+    document.querySelectorAll('.easter-egg-trigger').forEach(badge => {
+        badge.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent row selection if any
+            toggleEasterEggMusic(badge);
         });
     });
 }
